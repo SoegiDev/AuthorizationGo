@@ -1,6 +1,7 @@
 package AuthorizationGo
 
 import (
+	"errors"
 	"gorm.io/gorm"
 )
 
@@ -17,11 +18,11 @@ type AuthOption struct {
 }
 
 var (
-	XErrPermissionInUse     = errors.New("cannot delete assigned permission")
-	XErrPermissionNotFound  = errors.New("permission not found")
-	XErrRoleAlreadyAssigned = errors.New("this role is already assigned to the user")
-	XErrRoleInUse           = errors.New("cannot delete assigned role")
-	XErrRoleNotFound        = errors.New("role not found")
+	ErrPermissionInUse     = errors.New("cannot delete assigned permission")
+	ErrPermissionNotFound  = errors.New("permission not found")
+	ErrRoleAlreadyAssigned = errors.New("this role is already assigned to the user")
+	ErrRoleInUse           = errors.New("cannot delete assigned role")
+	ErrRoleNotFound        = errors.New("role not found")
 )
 
 var authGo *AuthorizationX
@@ -83,7 +84,7 @@ func (a *AuthorizationX) AssignPermissions(roleName string, permNames []string) 
 	rRes := a.DB.Where("name = ?", roleName).First(&role)
 	if rRes.Error != nil {
 		if errors.Is(rRes.Error, gorm.ErrRecordNotFound) {
-			return XErrRoleNotFound
+			return ErrRoleNotFound
 		}
 
 	}
@@ -95,7 +96,7 @@ func (a *AuthorizationX) AssignPermissions(roleName string, permNames []string) 
 		pRes := a.DB.Where("name = ?", permName).First(&perm)
 		if pRes.Error != nil {
 			if errors.Is(pRes.Error, gorm.ErrRecordNotFound) {
-				return XErrPermissionNotFound
+				return ErrPermissionNotFound
 			}
 
 		}
@@ -126,7 +127,7 @@ func (a *AuthorizationX) AssignRole(userID uint, roleName string) error {
 	res := a.DB.Where("name = ?", roleName).First(&role)
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return XErrRoleNotFound
+			return ErrRoleNotFound
 		}
 	}
 
@@ -135,7 +136,7 @@ func (a *AuthorizationX) AssignRole(userID uint, roleName string) error {
 	res = a.DB.Where("user_id = ?", userID).Where("role_id = ?", role.ID).First(&userRole)
 	if res.Error == nil {
 		//found a record, this role is already assigned to the same user
-		return XErrRoleAlreadyAssigned
+		return ErrRoleAlreadyAssigned
 	}
 
 	// assign the role
@@ -150,7 +151,7 @@ func (a *AuthorizationX) CheckRole(userID uint, roleName string) (bool, error) {
 	res := a.DB.Where("name = ?", roleName).First(&role)
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return false, XErrRoleNotFound
+			return false, ErrRoleNotFound
 		}
 
 	}
@@ -189,7 +190,7 @@ func (a *AuthorizationX) CheckPermission(userID uint, permName string) (bool, er
 	res = a.DB.Where("name = ?", permName).First(&perm)
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return false, XErrPermissionNotFound
+			return false, ErrPermissionNotFound
 		}
 
 	}
@@ -210,7 +211,7 @@ func (a *AuthorizationX) CheckRolePermission(roleName string, permName string) (
 	res := a.DB.Where("name = ?", roleName).First(&role)
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return false, XErrRoleNotFound
+			return false, ErrRoleNotFound
 		}
 
 	}
@@ -220,7 +221,7 @@ func (a *AuthorizationX) CheckRolePermission(roleName string, permName string) (
 	res = a.DB.Where("name = ?", permName).First(&perm)
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return false, XErrPermissionNotFound
+			return false, ErrPermissionNotFound
 		}
 
 	}
@@ -244,7 +245,7 @@ func (a *AuthorizationX) RevokeRole(userID uint, roleName string) error {
 	res := a.DB.Where("name = ?", roleName).First(&role)
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return XErrRoleNotFound
+			return ErrRoleNotFound
 		}
 
 	}
@@ -272,7 +273,7 @@ func (a *AuthorizationX) RevokePermission(userID uint, permName string) error {
 	res = a.DB.Where("name = ?", permName).First(&perm)
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return XErrPermissionNotFound
+			return ErrPermissionNotFound
 		}
 
 	}
@@ -291,7 +292,7 @@ func (a *AuthorizationX) RevokeRolePermission(roleName string, permName string) 
 	res := a.DB.Where("name = ?", roleName).First(&role)
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return XErrRoleNotFound
+			return ErrRoleNotFound
 		}
 
 	}
@@ -301,7 +302,7 @@ func (a *AuthorizationX) RevokeRolePermission(roleName string, permName string) 
 	res = a.DB.Where("name = ?", permName).First(&perm)
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return XErrPermissionNotFound
+			return ErrPermissionNotFound
 		}
 
 	}
@@ -359,7 +360,7 @@ func (a *AuthorizationX) DeleteRole(roleName string) error {
 	res := a.DB.Where("name = ?", roleName).First(&role)
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return XErrRoleNotFound
+			return ErrRoleNotFound
 		}
 
 	}
@@ -369,7 +370,7 @@ func (a *AuthorizationX) DeleteRole(roleName string) error {
 	res = a.DB.Where("role_id = ?", role.ID).First(&userRole)
 	if res.Error == nil {
 		// role is assigned
-		return XErrRoleInUse
+		return ErrRoleInUse
 	}
 
 	// revoke the assignment of permissions before deleting the role
@@ -387,7 +388,7 @@ func (a *AuthorizationX) DeletePermission(permName string) error {
 	res := a.DB.Where("name = ?", permName).First(&perm)
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return XErrPermissionNotFound
+			return ErrPermissionNotFound
 		}
 
 	}
@@ -397,7 +398,7 @@ func (a *AuthorizationX) DeletePermission(permName string) error {
 	res = a.DB.Where("permission_id = ?", perm.ID).First(&rolePermission)
 	if res.Error == nil {
 		// role is assigned
-		return XErrPermissionInUse
+		return ErrPermissionInUse
 	}
 
 	// delete the permission
