@@ -25,10 +25,11 @@ func TestMain(m *testing.M) {
 	var dsn string
 	if os.Getenv("env") == "testing" {
 		fmt.Println("preparing testing config...")
-		dsn = fmt.Sprintf("host=localhost user=postgres password=%s dbname=authorizationGo port=5432 sslmode=disable TimeZone=Asia/Shanghai",
-			os.Getenv("DbPassword"))
+		dsn = fmt.Sprintf("host=localhost user=%s password=%s dbname=authorizationGo port=5432 sslmode=disable TimeZone=Asia/Shanghai",
+			os.Getenv("DbUser"),os.Getenv("DbPassword"))
 	} else {
-		dsn = "root:@tcp(127.0.0.1:5432)/authorization_Go?charset=utf8mb4&parseTime=True&loc=Local"
+		dsn = fmt.Sprintf("host=localhost user=%s password=%s dbname=authorizationGo port=5432 sslmode=disable TimeZone=Asia/Shanghai",
+		os.Getenv("DbUser"),os.Getenv("DbPassword"))
 	}
 
 	db, _ = gorm.Open(postgres.Open(dsn), &gorm.Config{})
