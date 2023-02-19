@@ -664,7 +664,7 @@ func TestDeleteRole(t *testing.T) {
 
 func TestDeletePermission(t *testing.T) {
 	auth := AuthorizationGo.New(AuthorizationGo.AuthOption{
-		TablesPrefix: prefix_test
+		TablesPrefix: prefix_test,
 		DB:           db,
 	})
 
