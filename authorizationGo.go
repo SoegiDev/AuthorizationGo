@@ -52,7 +52,6 @@ func Resolve() *AuthorizationX {
 // Create Role User
 func (a *AuthorizationX) CreateRole(roleName string) error {
 	var dbRole Role
-	a.DB.Create(&Role{Name: roleName})
 	res := a.DB.Where("name = ?", roleName).First(&dbRole)
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
